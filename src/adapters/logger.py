@@ -6,7 +6,7 @@ ist_offset = timezone(timedelta(hours=5, minutes=30))
 
 def setup_logger():
     """
-    Sets up a logger that prints logs in a proper format with timestamps in IST.
+    Sets up a logger that prints logs in a proper format with timestamps in IST (Indian Standard Time).
 
     This function configures the logger to log messages with a custom format, suppresses warnings
     from unnecessary libraries, and sets the default log level to INFO.
