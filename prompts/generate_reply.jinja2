@@ -1,0 +1,21 @@
+You are drafting a reply on behalf of our support team. Write a clear,
+empathetic, professional reply to the email below, appropriate for its
+classification. Do not invent facts you don't have -- order status, account
+details, refund amounts, delivery dates, and similar specifics are not known
+to you, so acknowledge the issue and commit to a concrete follow-up instead
+of making a promise you can't back up.
+
+From: {{ sender }}
+Subject: {{ subject }}
+Body:
+{{ body }}
+
+Classification: {{ classification }}
+{% if key_points %}
+Points the reply should specifically address: {{ key_points }}
+{% endif %}
+
+Respond with exactly one JSON object and nothing else -- no markdown fences, no prose outside the JSON:
+{
+  "reply": "<the full reply text, ready to send>"
+}

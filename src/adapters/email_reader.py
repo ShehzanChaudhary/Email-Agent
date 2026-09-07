@@ -13,18 +13,20 @@ from config.config import Config
 from src.adapters.logger import logger
 from src.model import EmailMessage
 
+
 def _decode(value: str | None) -> str:
     """Decodes a possibly RFC 2047 encoded header (e.g. '=?UTF-8?B?...?=') into plain text."""
     if not value:
-        return ''
+        return ""
     parts = decode_header(value)
-    decoded = ''
+    decoded = ""
     for text, charset in parts:
         if isinstance(text, bytes):
-            decoded += text.decode(charset or 'utf-8', errors='replace')
+            decoded += text.decode(charset or "utf-8", errors="replace")
         else:
             decoded += text
     return decoded
+
 
 class IMAPEmailReader:
     """
@@ -45,7 +47,7 @@ class IMAPEmailReader:
         self._address = Config.EMAIL_ADDRESS
         self._password = Config.EMAIL_PASSWORD
         self._folder = Config.IMAP_FOLDER
-        self._lookback_seconds = Config.POLL_INTERVAL_SECONDS
+        self._lookback_seconds = Config.POLL_INTERVAL_SECONDS * 60
         self._processed_uids: set[str] = set()
 
     def _connect(self) -> imaplib.IMAP4_SSL:
@@ -94,15 +96,16 @@ class IMAPEmailReader:
                         names.append(_decode(filename))
         return names
 
-    def _parse_message(self, uid: str, raw: bytes) -> EmailMessage:
+    def _parse_message(self, uid: str, raw: bytes, received_at: str) -> EmailMessage:
         msg = email.message_from_bytes(raw)
-        _, sender_addr = parseaddr(_decode(msg.get("From")))
+        sender_name, sender_email = parseaddr(_decode(msg.get("From")))
         return EmailMessage(
             uid=uid,
-            sender=sender_addr or _decode(msg.get("From")),
+            sender_name=sender_name,
+            sender_email=sender_email,
             subject=_decode(msg.get("Subject")),
             body=self._extract_body(msg),
-            date=msg.get("Date", ""),
+            received_at=received_at,
             attachments=self._extract_attachments(msg),
         )
 
@@ -143,8 +146,9 @@ class IMAPEmailReader:
                 if received_epoch < cutoff_epoch:
                     continue  # older than the lookback window -- ignore
 
-                email_msg = self._parse_message(uid_str, raw)
-                logger.info(f"Read email uid={uid_str} from={email_msg.sender} subject={email_msg.subject!r}")
+                received_at = datetime.fromtimestamp(received_epoch).astimezone().isoformat()
+                email_msg = self._parse_message(uid_str, raw, received_at)
+                logger.info(f"Read email uid={uid_str} from={email_msg.sender_email} subject={email_msg.subject!r}")
 
                 try:
                     handler(email_msg)

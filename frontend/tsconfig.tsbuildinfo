@@ -1,0 +1,1 @@
+{"root":["./src/app.tsx","./src/api.ts","./src/main.tsx","./src/types.ts","./src/vite-env.d.ts","./src/components/badges.tsx","./src/components/classificationbreakdown.tsx","./src/components/detailpanel.tsx","./src/components/emailtable.tsx","./src/components/kpicard.tsx"],"version":"5.9.3"}
